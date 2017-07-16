@@ -24,12 +24,6 @@ RBK_INHERIT_SOURCE(SSLStrategy)
 #include <robokit/core/model.h>
 #include <robokit/core/rbk_config.h>
 
-#if defined(RBK_SYS_WINDOWS) && _MSC_VER <= 1600
-#include <boost/chrono.hpp>
-#else
-#include <chrono>
-#endif
-
 namespace { 
 	bool VERBOSE_MODE = true;
 	void debugMessageSend();
@@ -71,16 +65,6 @@ void SSLStrategy::messageRawVisionCallBack(google::protobuf::Message*)
 }
 
 void SSLStrategy::run(){
-#if defined(RBK_SYS_WINDOWS) && _MSC_VER <= 1600
-	boost::chrono::time_point<boost::chrono::steady_clock> tp1;
-	boost::chrono::time_point<boost::chrono::steady_clock> tp2;
-	tp1 = boost::chrono::steady_clock::now();
-#else
-	std::chrono::time_point<std::chrono::steady_clock> tp1;
-	std::chrono::time_point<std::chrono::steady_clock> tp2;
-	tp1 = std::chrono::steady_clock::now();
-#endif
-
 	PARAM_READER->readParams();
 
 	initializeSingleton();
@@ -164,26 +148,6 @@ void SSLStrategy::run(){
 
 			// new addition for SSLGuiDugger plugin
 			debugMessageSend();
-
-#if defined(RBK_SYS_WINDOWS) && _MSC_VER <= 1600
-			tp2 = boost::chrono::steady_clock::now();
-			auto delt_time = boost::chrono::duration_cast<boost::chrono::milliseconds>((tp2 - tp1)).count();
-			tp1 = boost::chrono::steady_clock::now();
-#else
-			tp2 = std::chrono::steady_clock::now();
-			auto delt_time = std::chrono::duration_cast<std::chrono::milliseconds>((tp2 - tp1)).count();
-			tp1 = std::chrono::steady_clock::now();
-#endif
-			if (delt_time < 1000.0/60) {
-				// Ë¯Ãß£¬È¥µôÔëÉùÍ¼Ïñ£¬±£Ö¤ÎÈ¶¨µÄÍ¼ÏñÖ¡ÂÊ
-				Sleep(1000.0/60 - delt_time);	
-				//std::cout<<cycle<<'\t'<<1000.0/Param::Vision::FRAME_RATE-delt_time<<std::endl;
-			}
-
-			if (stop) {
-				Sleep(100);
-				break;
-			}	
 		}
 	}
 	
